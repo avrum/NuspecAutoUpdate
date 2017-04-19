@@ -5,6 +5,7 @@ A build script that can be included in TFS that update the versions of the depen
 
 # How To Use
 NuspecAutoUpdate.ps1 -NuspecPath "myPackage.nuspec" -PackagesConfigPath "packages.config"
+
 NuspecAutoUpdate.ps1 -NuspecPath "C:\API\API.nuspec" -PackagesConfigPath "C:\API\packages.config"
 
 # Visual Studio Post Build Event
