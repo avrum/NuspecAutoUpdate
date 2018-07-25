@@ -69,7 +69,7 @@ foreach($targetFrameworkGroup in $nuspecXml.package.metadata.dependencies.group)
             $oldVersion = $($dependencyEntry.version);
 
             #Notice: the fullNewVersion include "[ ] ( ) ," chars that doesn't exist in the package config file.
-            $fullNewVersion = $oldVersion -replace $versionRegex, $versionFromConfigFile;
+            $fullNewVersion = $versionRegex.replace($oldVersion, $versionFromConfigFile, 1);
             if($dependencyEntry.version -ne $fullNewVersion)
             {
                 $dependencyEntry.version = $fullNewVersion;
