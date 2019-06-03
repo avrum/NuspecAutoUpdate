@@ -78,6 +78,12 @@ foreach($targetFrameworkGroup in $nuspecXml.package.metadata.dependencies.group)
         
             Write-Host "Dependency ID: $dependencyID , Old version: $oldVersion , New version: $fullNewVersion";
         }
+		else
+		{
+			 Write-Host "Dependency ID: $dependencyID Removed";
+			 $dependencyEntry.ParentNode.RemoveChild($dependencyEntry);
+			 $changesWhereMade = $True;
+		}
     }
     Write-Host "";
 }
