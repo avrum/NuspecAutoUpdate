@@ -23,6 +23,6 @@ C:\WINDOWS\system32\windowspowershell\v1.0\powershell.exe  -ExecutionPolicy Unre
 
 Contributions
 ----
-Aviram Fireberger (Me)
-Māris Krivtežs
-Ashish Dawale 
+* Aviram Fireberger (Me)
+* Māris Krivtežs
+* Ashish Dawale 
