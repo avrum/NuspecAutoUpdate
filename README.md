@@ -19,3 +19,10 @@ C:\WINDOWS\system32\windowspowershell\v1.0\powershell.exe  -ExecutionPolicy Unre
 **"Sharing Is Caring" Please Contact Me For Merge Requests**
 ### Would appriciate if other developers and dev-ops will contribute this this project.
 
+
+
+Contributions
+----
+Aviram Fireberger (Me)
+Māris Krivtežs
+Ashish Dawale 
