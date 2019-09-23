@@ -51,7 +51,7 @@ foreach($packageEntry in $packagesConfigXml.packages.package)
 # ReWrite the new version in the nuspec file.
 Write-Host "ReWrite the new version in the nuspec file.";
 $changesWhereMade = $False;
-$versionRegex = [regex]"[0-9][a-z][A-Z]+(.[0-9]+)*";
+$versionRegex = [regex]"[0-9][a-z]+(.[0-9]+)*";
 $nuspecXml = ReadXmlContent $NuspecPath;
 foreach($targetFrameworkGroup in $nuspecXml.package.metadata.dependencies.group)
 {
