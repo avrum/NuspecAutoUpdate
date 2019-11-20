@@ -37,6 +37,38 @@ function ReadXmlContent($filePath)
     }
 }
 
+function UpdateChildElements($dependencyEntry)
+{
+    $versionChanged = $False;
+    $dependencyID = $($dependencyEntry.id);
+
+    $dependencyExistInPackageConfig = $packagesDictionary.ContainsKey($dependencyID);
+    if($dependencyExistInPackageConfig)
+    {
+        # We want to get the ' $versionFromConfigFile' and put it in the current '$dependencyEntry'.
+        $versionFromConfigFile = $($packagesDictionary[$dependencyID]);
+        $oldVersion = $($dependencyEntry.version);
+
+        #Notice: the fullNewVersion include "[ ] ( ) ," chars that doesn't exist in the package config file.
+        $fullNewVersion = $versionRegex.replace($oldVersion, $versionFromConfigFile, 1);
+        if($dependencyEntry.version -ne $fullNewVersion)
+        {
+            $dependencyEntry.version = $fullNewVersion;
+            $versionChanged = $True;
+        }
+
+        Write-Host "Dependency ID: $dependencyID , Old version: $oldVersion , New version: $fullNewVersion";
+    }
+    else
+    {
+        Write-Host "Dependency ID: $dependencyID Removed";
+        $dependencyEntry.ParentNode.RemoveChild($dependencyEntry);
+        $versionChanged = $True;
+    }
+    return $versionChanged
+
+}
+
 # Reading all packages name & version from the "packages.Config" file
 Write-Host "`nReading all packages name & version from the 'packages.Config' file";
 $packagesDictionary = @{};
@@ -53,37 +85,30 @@ Write-Host "ReWrite the new version in the nuspec file.";
 $changesWhereMade = $False;
 $versionRegex = [regex]"[0-9]+(.[0-9a-z]+)*";
 $nuspecXml = ReadXmlContent $NuspecPath;
+
+Write-Host "";
+Write-Host "Processing dependency root:";
+foreach($dependencyEntry in $nuspecXml.package.metadata.dependencies.dependency)
+{
+    $updateChild = UpdateChildElements $dependencyEntry;
+    if($updateChild -eq $True) 
+    {
+        $changesWhereMade = $True;
+    }
+}
+Write-Host "";
+
 foreach($targetFrameworkGroup in $nuspecXml.package.metadata.dependencies.group)
 {
     Write-Host "";
     Write-Host "Processing dependency group: $($targetFrameworkGroup.targetFramework)";
     foreach($dependencyEntry in $targetFrameworkGroup.dependency)
     {
-        $dependencyID = $($dependencyEntry.id);
-
-        $dependencyExistInPackageConfig = $packagesDictionary.ContainsKey($dependencyID);
-        if($dependencyExistInPackageConfig)
+        $updateChild = UpdateChildElements $dependencyEntry;
+        if($updateChild -eq $True) 
         {
-            # We want to get the ' $versionFromConfigFile' and put it in the current '$dependencyEntry'.
-            $versionFromConfigFile = $($packagesDictionary[$dependencyID]);
-            $oldVersion = $($dependencyEntry.version);
-
-            #Notice: the fullNewVersion include "[ ] ( ) ," chars that doesn't exist in the package config file.
-            $fullNewVersion = $versionRegex.replace($oldVersion, $versionFromConfigFile, 1);
-            if($dependencyEntry.version -ne $fullNewVersion)
-            {
-                $dependencyEntry.version = $fullNewVersion;
-                $changesWhereMade = $True;
-            }
-        
-            Write-Host "Dependency ID: $dependencyID , Old version: $oldVersion , New version: $fullNewVersion";
+            $changesWhereMade = $True;
         }
-		else
-		{
-			 Write-Host "Dependency ID: $dependencyID Removed";
-			 $dependencyEntry.ParentNode.RemoveChild($dependencyEntry);
-			 $changesWhereMade = $True;
-		}
     }
     Write-Host "";
 }
