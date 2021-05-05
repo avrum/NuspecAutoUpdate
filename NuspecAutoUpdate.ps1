@@ -1,8 +1,6 @@
 <#
-
 .DESCRIPTION
    A build script that can be included in TFS that update the versions of the dependencies in the '*.nuspec' file from the 'packages.config' file.
-
 .EXAMPLE
    NuspecAutoUpdate.ps1 -NuspecPath "myPackage.nuspec" -PackagesConfigPath "packages.config"
 .EXAMPLE
@@ -48,12 +46,24 @@ foreach($packageEntry in $packagesConfigXml.packages.package)
 }
 
 
+
 # ReWrite the new version in the nuspec file.
 Write-Host "ReWrite the new version in the nuspec file.";
 $changesWhereMade = $False;
-$versionRegex = [regex]"[0-9]+(.[0-9a-z]+)*";
+$versionRegex = [regex]"[0-9a-z]+(.[0-9a-z]+)*";
 $nuspecXml = ReadXmlContent $NuspecPath;
-foreach($targetFrameworkGroup in $nuspecXml.package.metadata.dependencies.group)
+$nuspecDictionary = @{};
+
+foreach($targetFrameworkGroup in $nuspecXml.package.metadata.dependencies)
+{
+   foreach($dependencyEntry in $targetFrameworkGroup.dependency)
+    {
+       $nuspecDictionary[$dependencyEntry.id] = $dependencyEntry.version;
+    }
+}
+
+
+foreach($targetFrameworkGroup in $nuspecXml.package.metadata.dependencies)
 {
     Write-Host "";
     Write-Host "Processing dependency group: $($targetFrameworkGroup.targetFramework)";
@@ -88,6 +98,27 @@ foreach($targetFrameworkGroup in $nuspecXml.package.metadata.dependencies.group)
     Write-Host "";
 }
 
+foreach($packageKey in $packagesDictionary.keys)
+{
+    $dependencyExistInNuspec = $nuspecDictionary.ContainsKey($packageKey);
+    if(!$dependencyExistInNuspec)
+    {
+      $dependencyElement = $nuspecXml.CreateElement("dependency", $nuspecXml.DocumentElement.NamespaceURI);
+
+      $xmlAtt1 = $nuspecXml.CreateAttribute("id");
+      $xmlAtt1.Value = "$packageKey";
+      $dependencyElement.Attributes.Append($xmlAtt1);
+
+      $xmlAtt2 = $nuspecXml.CreateAttribute("version");
+      $xmlAtt2.Value = "$($packagesDictionary[$packageKey])";    
+      $dependencyElement.Attributes.Append($xmlAtt2);
+
+      $targetFrameworkGroup.AppendChild($dependencyElement);
+
+      Write-Host "Adding dependency: "$packageKey" ";
+      $changesWhereMade = $True;
+    }
+}
 if($changesWhereMade)
 {
     Write-Host "Saving the new data in the original nuspec file.";
